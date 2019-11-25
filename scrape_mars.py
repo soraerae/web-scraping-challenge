@@ -1,12 +1,13 @@
 from splinter import Browser
 from bs4 import BeautifulSoup
+from flask import Flask, render_template
 import pandas as pd
 
 # Create an instance of Flask
 app = Flask(__name__)
 
 def init_browser():
-    executable_path = {"executable_path": "/Users/Soraiya Professional/Downloads/chromedriver_win32"}
+    executable_path = {"executable_path": "\Program Files\Chrome Driver\chromedriver.exe"}
     return Browser("chrome", **executable_path, headless=False)
 
 scraped_data = {}
@@ -20,8 +21,8 @@ def scrape():
     news_html = browser.html
     news_soup = BeautifulSoup(news_html, "html.parser")
 
-    scraped_data["news_title"] = news_soup.find("div", class_="content_title")[0].get_text()
-    scraped_data["news_p"] = news_soup.find("div", class_="article_teaser_body")[0].get_text()
+    scraped_data["news_title"] = news_soup.find("div", class_="content_title").get_text()
+    scraped_data["news_p"] = news_soup.find("div", class_="article_teaser_body").get_text()
     
     browser.quit()
 
@@ -41,7 +42,7 @@ def scrape():
 
     featured_image_url = homepage + featured_image
 
-    scraped_data["features_image_url"] = featured_image_url    
+    scraped_data["featured_image_url"] = featured_image_url    
 
     browser.quit()
 
@@ -79,16 +80,17 @@ def scrape():
     homepage_url = 'https://astrogeology.usgs.gov'
     hemisphere_image_urls = []
 
-        for result in results_hemi: 
-            title = result.find('h3').text
-            search_url = result.find('a')['href']
-            browser.visit(homepage_url + search_url)
-            image_html = browser.html
-            image_soup = BeautifulSoup(image_html, 'html.parser')
-            url = image_soup.find('div', class_='downloads')
-            url = url.find_all('li')[1]
-            url = url.a['href']
-            hemisphere_image_urls.append({'title': title, 'image_url': url})
+    for result in results_hemi: 
+        title = result.find('h3').text
+        search_url = result.find('a')['href']
+        browser.visit(homepage_url + search_url)
+        image_html = browser.html
+        image_soup = BeautifulSoup(image_html, 'html.parser')
+        image_html = browser.html
+        image_soup = BeautifulSoup(image_html, 'html.parser')
+        url = image_soup.find('img', class_='wide-image')
+        url = url['src']
+        hemisphere_image_urls.append({'title': title, 'image_url': homepage_url + url})
     
     scraped_data["hemisphere_image_urls"] = hemisphere_image_urls
 
